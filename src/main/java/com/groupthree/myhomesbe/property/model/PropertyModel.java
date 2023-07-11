@@ -12,7 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Document
+@Document(collection = "properties")
 public class PropertyModel {
     @Id
     private String id;
