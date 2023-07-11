@@ -3,6 +3,7 @@ package com.groupthree.myhomesbe.auth.controller;
 import com.groupthree.myhomesbe.auth.model.UserModel;
 import com.groupthree.myhomesbe.auth.payload.request.LoginRequest;
 import com.groupthree.myhomesbe.auth.payload.request.SignupRequest;
+import com.groupthree.myhomesbe.auth.payload.response.ErrorResponse;
 import com.groupthree.myhomesbe.auth.payload.response.JwtResponse;
 import com.groupthree.myhomesbe.auth.payload.response.MessageResponse;
 import com.groupthree.myhomesbe.auth.repository.UserRepository;
@@ -21,6 +22,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.MediaType;
 
 import javax.validation.Valid;
 import java.util.*;
@@ -28,7 +30,7 @@ import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping(value = "/api/auth", produces = MediaType.APPLICATION_JSON_VALUE)
 public class AuthController {
     @Autowired
     AuthenticationManager authenticationManager;
@@ -87,8 +89,7 @@ public class AuthController {
 
         if (userRepository.existsByEmail(signUpRequest.getEmail())) {
             return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Error: Email is already in use!"));
+                    .badRequest().body(new ErrorResponse("Email already exists"));
         }
 
         // Create new user's account
