@@ -19,13 +19,5 @@ public class PropertyLoader implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        int size = propertyRepository.findAll().size();
-
-        if(size == 0) {
-            propertyRepository.save(new PropertyModel(
-                    null,
-                    "2 Bedroom 1 Bathroom Condo"
-                    ));
-        }
     }
 }
