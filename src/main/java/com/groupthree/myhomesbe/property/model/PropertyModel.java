@@ -13,7 +13,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "properties")
-public class PropertyModel {
+public class  PropertyModel {
     @Id
     private String id;
     private String title;

@@ -17,7 +17,7 @@ import java.util.Set;
 @Setter
 @Getter
 @Document(collection = "users")
-public class UserModel {
+public class  UserModel {
         @Id
         private String id;
 
