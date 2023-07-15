@@ -13,6 +13,9 @@ import com.groupthree.myhomesbe.security.services.UserDetailsImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -23,11 +26,22 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.MediaType;
+<<<<<<< HEAD
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+=======
+import org.springframework.web.multipart.MultipartFile;
+
+>>>>>>> edit-profile-be
 
 import javax.validation.Valid;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -102,25 +116,25 @@ public class  AuthController {
 
         if(signUpRequest.getAccountType().equals("seller")) {
             user = new UserModel(
-//                signUpRequest.getUsername(),
-
                     signUpRequest.getEmail(),
                     encoder.encode(signUpRequest.getPassword()),
                     signUpRequest.getFirstName(),
                     signUpRequest.getLastName(),
                     signUpRequest.getAccountType(),
                     signUpRequest.getCompany(),
-                    signUpRequest.getPlan()
+                    signUpRequest.getPlan(),
+                    null,
+                    null
             );
         } else {
             user = new UserModel(
-//                  signUpRequest.getUsername(),
-
                     signUpRequest.getEmail(),
                     encoder.encode(signUpRequest.getPassword()),
                     signUpRequest.getFirstName(),
                     signUpRequest.getLastName(),
                     signUpRequest.getAccountType(),
+                    null,
+                    null,
                     null,
                     null
             );
@@ -162,6 +176,105 @@ public class  AuthController {
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }
 
+    @GetMapping("/seller-profile/{id}")
+    public ResponseEntity<?> getSellerProfile(@PathVariable("id") String id) {
+        UserModel user = userRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with id: " + id));
+
+        if (!user.getAccountType().equals("seller")) {
+            return ResponseEntity.badRequest().body(new ErrorResponse("Invalid request. User is not a seller."));
+        }
+
+        return ResponseEntity.ok(user);
+    }
+
+    @PutMapping("/seller-profile/{id}")
+    public ResponseEntity<?> updateSellerProfile(@PathVariable("id") String id, @RequestBody UserModel updatedUser) {
+        UserModel existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with id: " + id));
+
+        if (!existingUser.getAccountType().equals("seller")) {
+            return ResponseEntity.badRequest().body(new ErrorResponse("Invalid request. User is not a seller."));
+        }
+
+        existingUser.setFirstName(updatedUser.getFirstName());
+        existingUser.setLastName(updatedUser.getLastName());
+        existingUser.setCompany(updatedUser.getCompany());
+        existingUser.setAbout(updatedUser.getAbout());
+
+        userRepository.save(existingUser);
+
+        return ResponseEntity.ok(new MessageResponse("Seller profile updated successfully!"));
+    }
+
+    @GetMapping("/seller-profile/{id}/profile-picture")
+    public ResponseEntity<Resource> getProfilePicture(@PathVariable("id") String id) {
+        UserModel existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with id: " + id));
+
+        if (!existingUser.getAccountType().equals("seller")) {
+            return ResponseEntity.badRequest().body(null);
+        }
+
+        String profilePicturePath = existingUser.getProfilePicture();
+
+        try {
+            Path profilePicture = Paths.get(profilePicturePath);
+            Resource resource = new UrlResource(profilePicture.toUri());
+
+            if (resource.exists()) {
+                return ResponseEntity.ok()
+                        .contentType(MediaType.IMAGE_JPEG)
+                        .body(resource);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (MalformedURLException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    @PutMapping("/seller-profile/{id}/profile-picture")
+    public ResponseEntity<?> updateSellerProfilePicture(
+            @PathVariable("id") String id,
+            @RequestParam("file") MultipartFile file
+    ) {
+        UserModel existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with id: " + id));
+
+        if (!existingUser.getAccountType().equals("seller")) {
+            return ResponseEntity.badRequest().body(new ErrorResponse("Invalid request. User is not a seller."));
+        }
+
+        try {
+
+            String profilePicture = saveProfilePicture(file);
+
+
+            existingUser.setProfilePicture(profilePicture);
+
+
+            userRepository.save(existingUser);
+
+            return ResponseEntity.ok(new MessageResponse("Profile picture updated successfully!"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse("Failed to update profile picture."));
+        }
+    }
+    private String saveProfilePicture(MultipartFile file) throws IOException {
+        String profilePictureDirectory = "src/main/resources/uploads/profile";
+        String profilePictureFileName = file.getOriginalFilename();
+
+        Path directory = Paths.get(profilePictureDirectory);
+        if (!Files.exists(directory)) {
+            Files.createDirectories(directory);
+        }
+
+        Path destinationFile = directory.resolve(profilePictureFileName);
+        Files.copy(file.getInputStream(), destinationFile, StandardCopyOption.REPLACE_EXISTING);
+
+        return profilePictureDirectory + "/" + profilePictureFileName;
+    }
+
     @GetMapping("/users/{userId}")
     public ResponseEntity<UserModel> getUserById(@PathVariable String userId) {
         Optional<UserModel> user = userRepository.findById(userId);
@@ -177,6 +290,5 @@ public class  AuthController {
         List<UserModel> sellers = userRepository.findByAccountType("seller");
         return ResponseEntity.ok(sellers);
     }
-
 
 }

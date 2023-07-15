@@ -1,16 +1,14 @@
 package com.groupthree.myhomesbe.property.model;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Setter
 @Getter
@@ -40,5 +38,17 @@ public class  PropertyModel {
     private boolean isSold;
     private List<ImageModel> images;
     private List<InquiryModel> inquiries;
+    private String dateSold;
 
+
+//    public List<ImageModel> getImages() {
+//        List<ImageModel> transformedImages = this.images.stream().map(e -> {
+//            e.setImageUrl(e.getImageUrl().contains("://") ?
+//                    e.getImageUrl() :
+//                    "http://localhost:5556/api/upload/get/" + e.getImageUrl());
+//
+//            return e;
+//        }).collect(Collectors.toList());
+//        return this.images;
+//    }
 }

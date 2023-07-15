@@ -52,6 +52,10 @@ public class  UserModel {
         @Size(max = 50)
         private String plan;
 
+        @Size(max = 300)
+        private String about;
+
+        private String profilePicture;
 
 //        @DBRef
 //        private Set<GrantedAuthority> roles = new HashSet<>();
@@ -67,7 +71,9 @@ public class  UserModel {
                 String lastName,
                 String accountType,
                 String company,
-                String plan
+                String plan,
+                String about,
+                String profilePicture
                 )
         {
 //                this.username = username;
@@ -80,6 +86,8 @@ public class  UserModel {
                 this.accountType = accountType;
                 this.company = company;
                 this.plan = plan;
+                this.about = about;
+                this.profilePicture = profilePicture;
         }
         public String getUsername() {
                 return email;
