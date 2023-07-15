@@ -26,14 +26,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.MediaType;
-<<<<<<< HEAD
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-=======
 import org.springframework.web.multipart.MultipartFile;
 
->>>>>>> edit-profile-be
 
 import javax.validation.Valid;
 import java.io.IOException;
