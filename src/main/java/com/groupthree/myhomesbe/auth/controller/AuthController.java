@@ -23,6 +23,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import javax.validation.Valid;
 import java.util.*;
@@ -31,6 +34,7 @@ import java.util.stream.Collectors;
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping(value = "/api/auth", produces = MediaType.APPLICATION_JSON_VALUE)
+
 public class  AuthController {
     @Autowired
     AuthenticationManager authenticationManager;
@@ -96,7 +100,7 @@ public class  AuthController {
 
         UserModel user;
 
-        if(signUpRequest.getAccountType() == "seller") {
+        if(signUpRequest.getAccountType().equals("seller")) {
             user = new UserModel(
 //                signUpRequest.getUsername(),
 
@@ -157,4 +161,22 @@ public class  AuthController {
 
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }
+
+    @GetMapping("/users/{userId}")
+    public ResponseEntity<UserModel> getUserById(@PathVariable String userId) {
+        Optional<UserModel> user = userRepository.findById(userId);
+        if (user.isPresent()) {
+            return ResponseEntity.ok(user.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/users/sellers")
+    public ResponseEntity<List<UserModel>> getAllSellers() {
+        List<UserModel> sellers = userRepository.findByAccountType("seller");
+        return ResponseEntity.ok(sellers);
+    }
+
+
 }

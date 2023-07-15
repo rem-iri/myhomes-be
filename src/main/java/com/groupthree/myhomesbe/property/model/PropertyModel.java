@@ -39,5 +39,6 @@ public class  PropertyModel {
     private String dateCreated;
     private boolean isSold;
     private List<ImageModel> images;
+    private List<InquiryModel> inquiries;
 
 }
