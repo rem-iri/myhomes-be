@@ -96,7 +96,10 @@ public class AuthController {
 
         UserModel user;
 
-        if(signUpRequest.getAccountType() == "seller") {
+
+
+        if(signUpRequest.getAccountType().equals("seller")) {
+            System.out.println("ACCOUNT TYPE " + signUpRequest.getAccountType());
             user = new UserModel(
 //                signUpRequest.getUsername(),
 
