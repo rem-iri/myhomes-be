@@ -2,6 +2,7 @@ package com.groupthree.myhomesbe.property.controller;
 
 import com.groupthree.myhomesbe.auth.repository.UserRepository;
 import com.groupthree.myhomesbe.property.model.ImageModel;
+import com.groupthree.myhomesbe.property.model.InquiryModel;
 import com.groupthree.myhomesbe.property.model.PropertyModel;
 import com.groupthree.myhomesbe.property.repository.PropertyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -52,6 +54,9 @@ public class PropertyController {
             List<ImageModel> images = property.getImages().stream().map(e -> {
                 return new ImageModel(null, e.getImageUrl());
             }).collect(Collectors.toList());
+
+            List<InquiryModel> inquiries = new ArrayList<>();
+
             PropertyModel newProperty = propertyRepository.save(new PropertyModel(
                     null,
                     property.getUser_id(),
@@ -73,6 +78,7 @@ public class PropertyController {
                     String.valueOf(timestamp.getTime()),
                     property.isSold(),
                     images,
+                    inquiries,
                     null
                     ));
             return new ResponseEntity<>(newProperty, HttpStatus.CREATED);
@@ -111,7 +117,18 @@ public class PropertyController {
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<PropertyModel> getById(@PathVariable("id") String id) {
-        Optional<PropertyModel> property = propertyRepository.findById(id);
-        return new ResponseEntity<>(property.get(), HttpStatus.OK);
+        Optional<PropertyModel> propertyQuery = propertyRepository.findById(id);
+
+        PropertyModel property = propertyQuery.get();
+
+        property.setImages(property.getImages().stream().map(image -> {
+            image.setImageUrl(image.getImageUrl().contains("://") ?
+                    image.getImageUrl() :
+                    "http://localhost:5556/api/upload/get/" + image.getImageUrl());
+
+            return image;
+        }).collect(Collectors.toList()));
+
+        return new ResponseEntity<>(property, HttpStatus.OK);
     }
 }
