@@ -254,7 +254,7 @@ public class AuthController {
         }
     }
     private String saveProfilePicture(MultipartFile file) throws IOException {
-        String profilePictureDirectory = "src/main/resources/profile";
+        String profilePictureDirectory = "src/main/resources/uploads/profile";
         String profilePictureFileName = file.getOriginalFilename();
 
         Path directory = Paths.get(profilePictureDirectory);
