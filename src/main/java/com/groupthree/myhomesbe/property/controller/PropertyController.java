@@ -27,28 +27,40 @@ public class PropertyController {
 
     @GetMapping("")
     @PreAuthorize("hasRole('USER')")
-    public List<PropertyModel> all() {
-        List<PropertyModel> properties =  propertyRepository.findAll();
+    public ResponseEntity<List<PropertyModel>> all(@RequestParam(required = false) String userId) {
+        try {
+            List<PropertyModel> properties = new ArrayList<PropertyModel>();
 
+            if (userId == null)
+                propertyRepository.findAll().forEach(properties::add);
+            else
+                propertyRepository.findByUserId(userId).forEach(properties::add);
 
-        List<PropertyModel> transformedProperties = properties.stream().map(prop -> {
-            prop.setImages(prop.getImages().stream().map(image -> {
-                image.setImageUrl(image.getImageUrl().contains("://") ?
-                        image.getImageUrl() :
-                        "http://localhost:5556/api/upload/get/" + image.getImageUrl());
+            if (properties.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
 
-                return image;
-            }).collect(Collectors.toList()));
+            List<PropertyModel> transformedProperties = properties.stream().map(prop -> {
+                prop.setImages(prop.getImages().stream().map(image -> {
+                    image.setImageUrl(image.getImageUrl().contains("://") ?
+                            image.getImageUrl() :
+                            "http://localhost:5556/api/upload/get/" + image.getImageUrl());
 
-            return prop;
-        }).collect(Collectors.toList());
+                    return image;
+                }).collect(Collectors.toList()));
 
-        return transformedProperties;
+                return prop;
+            }).collect(Collectors.toList());
+
+            return new ResponseEntity<>(transformedProperties, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @PostMapping("")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<PropertyModel> createTutorial(@RequestBody PropertyModel property) {
+    public ResponseEntity<PropertyModel> createProperty(@RequestBody PropertyModel property) {
         try {
             Timestamp timestamp = new Timestamp(System.currentTimeMillis());
             List<ImageModel> images = property.getImages().stream().map(e -> {
@@ -59,7 +71,7 @@ public class PropertyController {
 
             PropertyModel newProperty = propertyRepository.save(new PropertyModel(
                     null,
-                    property.getUser_id(),
+                    property.getUserId(),
                     property.getListingTitle(),
                     property.getPropertyType(),
                     property.getDescription(),
@@ -87,15 +99,70 @@ public class PropertyController {
         }
     }
 
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<PropertyModel> updateProperty(@PathVariable("id") String id, @RequestBody PropertyModel newProperty) {
+        Optional<PropertyModel> propertyQuery = propertyRepository.findById(id);
+
+        if (propertyQuery.isPresent()) {
+            try {
+
+                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+                List<ImageModel> images = newProperty.getImages().stream().map(e -> {
+                    return new ImageModel(null, e.getImageUrl());
+                }).collect(Collectors.toList());
+
+                PropertyModel currentProperty = propertyQuery.get();
+                PropertyModel propertyToSave = propertyRepository.save(new PropertyModel(
+                        currentProperty.getId(),
+                        currentProperty.getUserId(),
+                        newProperty.getListingTitle(),
+                        newProperty.getPropertyType(),
+                        newProperty.getDescription(),
+                        newProperty.getFurnishing(),
+                        newProperty.getSaleType(),
+                        newProperty.getBath(),
+                        newProperty.getBedroom(),
+                        newProperty.getPrice(),
+                        newProperty.getArea(),
+                        newProperty.getHouseNumber(),
+                        newProperty.getStreet(),
+                        newProperty.getVillage(),
+                        newProperty.getCity(),
+                        newProperty.getProvince(),
+                        newProperty.getRegion(),
+                        currentProperty.getDateCreated(),
+                        currentProperty.isSold(),
+                        images,
+                        currentProperty.getInquiries(),
+                        currentProperty.getDateSold()
+                ));
+                return new ResponseEntity<>(propertyToSave, HttpStatus.OK);
+            } catch (Exception e) {
+                return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<HttpStatus> deleteTutorial(@PathVariable("id") String id) {
-        try {
-            propertyRepository.deleteById(id);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<HttpStatus> deleteProperty(@PathVariable("id") String id) {
+        Optional<PropertyModel> propertyQuery = propertyRepository.findById(id);
+
+        if (propertyQuery.isPresent()) {
+            try {
+                propertyRepository.deleteById(id);
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            } catch (Exception e) {
+                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+
     }
 
     @PutMapping("/updateSold/{id}")
@@ -130,5 +197,40 @@ public class PropertyController {
         }).collect(Collectors.toList()));
 
         return new ResponseEntity<>(property, HttpStatus.OK);
+    }
+
+
+    @GetMapping("/allById")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<List<PropertyModel>> allByUserId(@RequestParam(required = false) String userId) {
+        try {
+            List<PropertyModel> properties = new ArrayList<PropertyModel>();
+
+            if (userId == null)
+                propertyRepository.findAll().forEach(properties::add);
+            else
+                propertyRepository.findByUserId(userId).forEach(properties::add);
+
+            if (properties.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+
+            List<PropertyModel> transformedProperties = properties.stream().map(prop -> {
+                prop.setImages(prop.getImages().stream().map(image -> {
+                    image.setImageUrl(image.getImageUrl().contains("://") ?
+                            image.getImageUrl() :
+                            "http://localhost:5556/api/upload/get/" + image.getImageUrl());
+
+                    return image;
+                }).collect(Collectors.toList()));
+
+                return prop;
+            }).collect(Collectors.toList());
+
+            return new ResponseEntity<>(transformedProperties, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
     }
 }
