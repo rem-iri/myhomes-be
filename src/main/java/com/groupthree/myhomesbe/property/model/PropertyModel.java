@@ -1,10 +1,12 @@
 package com.groupthree.myhomesbe.property.model;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.Instant;
 import java.util.List;
@@ -18,7 +20,9 @@ import java.util.stream.Collectors;
 public class  PropertyModel {
     @Id
     private String id;
-    private String user_id;
+    @Field("user_id")
+    @JsonProperty("user_id")
+    private String userId;
     private String listingTitle;
     private String propertyType;
     private String description;
