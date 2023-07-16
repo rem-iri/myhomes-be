@@ -1,5 +1,6 @@
 package com.groupthree.myhomesbe.property.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.data.annotation.Id;
 public class InquiryModel {
     @Id
     private String id;
+    @JsonProperty("buyer_id")
     private String buyer_id;
     private String message;
     private String phoneNumber;

@@ -1,16 +1,17 @@
 package com.groupthree.myhomesbe.property.controller;
 
-import com.groupthree.myhomesbe.auth.repository.UserRepository;
 import com.groupthree.myhomesbe.property.model.ImageModel;
 import com.groupthree.myhomesbe.property.model.InquiryModel;
 import com.groupthree.myhomesbe.property.model.PropertyModel;
+import com.groupthree.myhomesbe.property.inquiryrepository.InquiryRepository;
 import com.groupthree.myhomesbe.property.repository.PropertyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +25,9 @@ public class PropertyController {
 
     @Autowired
     PropertyRepository propertyRepository;
+
+    @Autowired
+    InquiryRepository inquiryRepository;
 
     @GetMapping("")
     @PreAuthorize("hasRole('USER')")
@@ -130,5 +134,39 @@ public class PropertyController {
         }).collect(Collectors.toList()));
 
         return new ResponseEntity<>(property, HttpStatus.OK);
+    }
+
+    @PutMapping("/{id}/inquiry")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<InquiryModel> createInquiry(
+            @PathVariable("id") String id,
+            @RequestBody InquiryModel inquiry
+    ) {
+        Optional<PropertyModel> propertyQuery = propertyRepository.findById(id);
+
+        if (propertyQuery.isPresent()) {
+            PropertyModel property = propertyQuery.get();
+
+            // Get the authenticated user's ID
+//            Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//            String buyerId = ((UserDetails) principal).getUsername();
+
+            // Set inquiry details
+            inquiry.setId(null);
+//            inquiry.setBuyer_id(buyerId);
+            inquiry.setDate(String.valueOf(new Timestamp(System.currentTimeMillis()).getTime()));
+
+            List<InquiryModel> currentInquiries = property.getInquiries();
+            currentInquiries.add(inquiry);
+
+            property.setInquiries(currentInquiries);
+            System.out.println(property);
+
+            propertyRepository.save(property);
+
+            return new ResponseEntity<>(inquiry, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 }

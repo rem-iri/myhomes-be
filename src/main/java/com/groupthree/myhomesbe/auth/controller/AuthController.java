@@ -271,7 +271,84 @@ public class  AuthController {
 
         return profilePictureDirectory + "/" + profilePictureFileName;
     }
+    @GetMapping("/buyer-profile/{id}")
+    public ResponseEntity<?> getBuyerProfile(@PathVariable("id") String id) {
+        UserModel user = userRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with id: " + id));
 
+        if (!user.getAccountType().equals("buyer")) {
+            return ResponseEntity.badRequest().body(new ErrorResponse("Invalid request. User is not a buyer."));
+        }
+
+        return ResponseEntity.ok(user);
+    }
+
+    @PutMapping("/buyer-profile/{id}")
+    public ResponseEntity<?> updateBuyerProfile(@PathVariable("id") String id, @RequestBody UserModel updatedUser) {
+        UserModel existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with id: " + id));
+
+        if (!existingUser.getAccountType().equals("buyer")) {
+            return ResponseEntity.badRequest().body(new ErrorResponse("Invalid request. User is not a buyer."));
+        }
+
+        existingUser.setFirstName(updatedUser.getFirstName());
+        existingUser.setLastName(updatedUser.getLastName());
+
+        userRepository.save(existingUser);
+
+        return ResponseEntity.ok(new MessageResponse("Buyer profile updated successfully!"));
+    }
+
+    @GetMapping("/buyer-profile/{id}/profile-picture")
+    public ResponseEntity<Resource> getBuyerProfilePicture(@PathVariable("id") String id) {
+        UserModel existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with id: " + id));
+
+        if (!existingUser.getAccountType().equals("buyer")) {
+            return ResponseEntity.badRequest().body(null);
+        }
+
+        String profilePicturePath = existingUser.getProfilePicture();
+
+        try {
+            Path profilePicture = Paths.get(profilePicturePath);
+            Resource resource = new UrlResource(profilePicture.toUri());
+
+            if (resource.exists()) {
+                return ResponseEntity.ok()
+                        .contentType(MediaType.IMAGE_JPEG)
+                        .body(resource);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (MalformedURLException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PutMapping("/buyer-profile/{id}/profile-picture")
+    public ResponseEntity<?> updateBuyerProfilePicture(
+            @PathVariable("id") String id,
+            @RequestParam("file") MultipartFile file
+    ) {
+        UserModel existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with id: " + id));
+
+        if (!existingUser.getAccountType().equals("buyer")) {
+            return ResponseEntity.badRequest().body(new ErrorResponse("Invalid request. User is not a buyer."));
+        }
+
+        try {
+            String profilePicture = saveProfilePicture(file);
+            existingUser.setProfilePicture(profilePicture);
+            userRepository.save(existingUser);
+
+            return ResponseEntity.ok(new MessageResponse("Profile picture updated successfully!"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse("Failed to update profile picture."));
+        }
+    }
     @GetMapping("/users/{userId}")
     public ResponseEntity<UserModel> getUserById(@PathVariable String userId) {
         Optional<UserModel> user = userRepository.findById(userId);
