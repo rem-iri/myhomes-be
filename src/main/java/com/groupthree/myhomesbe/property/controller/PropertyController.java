@@ -3,15 +3,14 @@ package com.groupthree.myhomesbe.property.controller;
 import com.groupthree.myhomesbe.property.model.ImageModel;
 import com.groupthree.myhomesbe.property.model.InquiryModel;
 import com.groupthree.myhomesbe.property.model.PropertyModel;
-import com.groupthree.myhomesbe.property.inquiryrepository.InquiryRepository;
+import com.groupthree.myhomesbe.property.repository.InquiryRepository;
 import com.groupthree.myhomesbe.property.repository.PropertyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
+
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;

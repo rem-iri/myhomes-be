@@ -25,20 +25,15 @@ public class UserDetailsImpl implements UserDetails {
 	private Collection<? extends GrantedAuthority> authorities;
 
 	public UserDetailsImpl(String id,
-//						   String username,
 						   String email, String password,
 			Collection<? extends GrantedAuthority> authorities) {
 		this.id = id;
-//		this.username = username;
 		this.email = email;
 		this.password = password;
 		this.authorities = authorities;
 	}
 
 	public static UserDetailsImpl build(UserModel user) {
-//		List<GrantedAuthority> authorities = user.getRoles().stream()
-//				.map(role -> new SimpleGrantedAuthority(role.getName().name()))
-//				.collect(Collectors.toList());
 
 		List<GrantedAuthority> authorities = user.getRoles().stream()
 				.map(role -> new SimpleGrantedAuthority(role.getAuthority()))
@@ -46,8 +41,7 @@ public class UserDetailsImpl implements UserDetails {
 
 
 		return new UserDetailsImpl(
-				user.getId(), 
-//				user.getUsername(),
+				user.getId(),
 				user.getEmail(),
 				user.getPassword(), 
 				authorities);
@@ -58,7 +52,6 @@ public class UserDetailsImpl implements UserDetails {
 		HashSet<GrantedAuthority> defaultAuthority = new HashSet<GrantedAuthority>();
 		defaultAuthority.add(new SimpleGrantedAuthority("ROLE_USER"));
 		System.out.println("ROLE " + defaultAuthority.size());
-//		return new HashSet<GrantedAuthority>();
 		return defaultAuthority;
 	}
 

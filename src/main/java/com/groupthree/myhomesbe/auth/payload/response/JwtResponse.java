@@ -10,7 +10,6 @@ import java.util.List;
 public class JwtResponse {
 	private String accessToken;
 	private String type = "Bearer";
-	//	private String username;
 	private String id;
 	private String email;
 	private String firstName;
@@ -23,14 +22,12 @@ public class JwtResponse {
 	public JwtResponse(
 			String accessToken,
 			String id,
-//			String username,
 			String email,
 			String firstName,
 			String lastName,
 			String accountType,
 			String company,
 			String plan
-//			List<String> roles
 	) {
 		this.accessToken = accessToken;
 		this.id = id;

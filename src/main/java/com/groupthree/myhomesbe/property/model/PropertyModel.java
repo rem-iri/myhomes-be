@@ -44,15 +44,4 @@ public class  PropertyModel {
     private List<InquiryModel> inquiries;
     private String dateSold;
 
-
-//    public List<ImageModel> getImages() {
-//        List<ImageModel> transformedImages = this.images.stream().map(e -> {
-//            e.setImageUrl(e.getImageUrl().contains("://") ?
-//                    e.getImageUrl() :
-//                    "http://localhost:5556/api/upload/get/" + e.getImageUrl());
-//
-//            return e;
-//        }).collect(Collectors.toList());
-//        return this.images;
-//    }
 }
